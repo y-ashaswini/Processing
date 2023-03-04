@@ -1,0 +1,97 @@
+class Ball {
+  int size;
+  float mass;
+  PVector loc;
+  PVector vel;
+  PVector acc;
+  
+  Ball(int size_, int x, int y) {
+    loc = new PVector(x, y);
+    vel = new PVector(0,0);
+    acc = new PVector(0,0);
+    size = size_;
+    mass = size_;
+  }
+  
+   void display() {
+    noStroke();
+    fill(255);
+    ellipse(loc.x, loc.y, size, size);
+   }
+   
+   void update() {
+     vel.add(acc);
+     loc.add(vel);
+   }
+   
+   float getMass() {
+     return mass;
+   }
+   
+   PVector getLoc() {
+     return loc;
+   }
+   
+   PVector getAcc() {
+     return acc;
+   }  
+   
+   void addForce(PVector f) {
+     acc.add(f);
+   }
+  
+}
+
+Ball ball1;
+Ball ball2;
+
+void setup() {
+  size(800, 640);
+  ball1 = new Ball(25, width/4, height/2);
+  ball2 = new Ball(50, width/2 +10, height/2);
+  frameRate(5);
+}
+
+void draw() {
+  background(0);
+  //fill(255);
+  //text("CLICK ON THE SCREEN TO SEE THE PLAY", 10, 20);
+  ball1.display();
+  ball2.display();
+  ball1.update();
+  ball2.update();
+  fun();
+}
+
+void fun() {
+
+   // ball 1 -> smaller
+   // ball 2 -> bigger
+   PVector one = ball1.getLoc();
+   PVector two = ball2.getLoc();
+   
+   float G = 0.1;
+   PVector direction = PVector.sub(two, one);
+   float magnitude = direction.mag();
+   direction.normalize();
+   //constrain(magnitude, 5.0, 25.0);
+   float f = G*ball1.getMass()*ball2.getMass()/(magnitude*magnitude);
+   
+   fill(255);
+   textSize(14);
+   text("(distance) magnitude : "+magnitude, 10, 12);
+   text("force : "+f, 10, 26);
+   text("ball1 location: "+one.x+" | "+one.y, 10, 40);
+   
+   
+   direction.mult(f);
+   ball1.addForce(direction);
+   
+   //PVector temp = new PVector(0.1, 0);
+   //ball1.addForce(temp);
+  
+   stroke(255);
+   line(two.x, two.y, one.x, one.y);
+     
+  
+}
