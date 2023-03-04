@@ -1,0 +1,79 @@
+class Ball {
+  PVector loc;
+  PVector vel;
+  PVector acc;
+  int size;
+  
+  Ball() {
+    loc = new PVector(width/2, height/2);
+    vel = new PVector(0,0);
+    acc = new PVector(0,-0.3);
+    size = 25;
+  }
+  
+  PVector getVel() {
+    return vel;
+  }
+
+  PVector getAcc() {
+    return acc;
+  }
+
+  void update() {
+    loc.add(vel);
+    vel.add(acc);
+    acc.mult(0);
+    
+  }
+  
+  // Newton's law
+  void applyForce(PVector f) {
+    acc.add(f);
+  }
+  
+  void bounce() {
+    if(loc.x>width || loc.x<0) {
+      vel.x *=-1;
+    }
+    
+    if(loc.y>height || loc.y<0) {
+      vel.y *=-1;
+    }
+  }
+  
+  void display() {
+    stroke(255);
+    fill(255);
+    ellipse(loc.x, loc.y, size, size); 
+  }
+  
+  
+}
+
+Ball ball;
+
+void setup() {
+  size(800, 640);
+  ball = new Ball();
+}
+
+void draw(){
+  background(0);
+  stroke(255);
+  textSize(14);
+  line(0, height/2, width, height/2);
+  text("vel x: "+ball.getVel().x+"  | vel y: "+ball.getVel().y, 10, 20);
+  text("acc x: "+ball.getAcc().x+" | acc y: "+ball.getAcc().y, 10, 40);
+  //text(, 10, 60);
+  //text(, 10, 80);
+  
+  PVector f = new PVector(0,0.3);
+  
+  ball.applyForce(f);
+  ball.update();
+  ball.bounce();
+  ball.display();
+
+
+  
+}
