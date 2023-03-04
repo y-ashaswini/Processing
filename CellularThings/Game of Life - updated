@@ -1,0 +1,147 @@
+/*
+* Press space bar to Pause / Play
+* When paused, use mouseclick to add new cells
+* If you move mouse over dead cells, they'll get back to life
+* If you move mouse over alive cells, they'll die
+*/
+
+
+int[][] cells;
+int[][] cells_temp;
+
+int cellSize = 5;
+int boardWidth;
+int boardHeight;
+int probabiltyAlive = 30;
+color aliveColor = color(0, 200, 0);
+color deadColor = color(0,0,0);
+
+
+// To make the pause / start functionality
+int timeInterval = 100;
+int lastRecordedTime = 0;
+boolean isPaused = false; 
+
+void setup() {
+  size(800, 640);
+  boardWidth = width/cellSize;
+  boardHeight = height/cellSize;
+  cells = new int[boardWidth][boardHeight];
+  cells_temp = new int[boardWidth][boardHeight];
+  
+  stroke(48);
+  
+  // Initilialization of cells
+  for(int x = 0; x < boardWidth; x++) {
+    for(int y = 0; y < boardHeight; y++) {
+      float state = random(100);
+      if(state > probabiltyAlive) {
+        state = 0;
+      } else {
+        state = 1;
+      }
+       cells[x][y] = int(state);
+    }
+  }  
+
+}
+
+
+void draw() {
+  // Drawing the grid
+  for(int x = 0; x < boardWidth; x++) {
+    for(int y = 0; y < boardHeight; y++) {
+      
+      // Setting fill color based on state -- in turn decided based on that biased probability score up there
+      if(cells[x][y] == 1) {
+        fill(aliveColor);
+      } else {
+        fill(deadColor);
+      }
+      
+      // Making the rectangle
+      rect (x*cellSize, y*cellSize, cellSize, cellSize);
+    }
+  }
+  
+  
+  if(millis() - lastRecordedTime > timeInterval) { // If time interval has passed, change state based on neighbour calculations
+    if(!isPaused) {
+      setNextBoardState();
+      lastRecordedTime = millis();
+    }
+  }
+  
+  // Condition for creating new cells -- if paused and mouse pressed
+  if(isPaused && mousePressed) {
+    int mouse_x_position_on_cell = int(map(mouseX, 0, width, 0, boardWidth));
+    mouse_x_position_on_cell = constrain(mouse_x_position_on_cell, 0, boardWidth-1);
+    int mouse_y_position_on_cell = int(map(mouseY, 0, height, 0, boardHeight));
+    mouse_y_position_on_cell = constrain(mouse_y_position_on_cell, 0, boardHeight - 1);
+    
+    if(cells_temp[mouse_x_position_on_cell][mouse_y_position_on_cell] == 1) {
+      cells[mouse_x_position_on_cell][mouse_y_position_on_cell] = 0;
+      fill(deadColor);
+      
+    } else {
+      cells[mouse_x_position_on_cell][mouse_y_position_on_cell] = 1;
+      fill(aliveColor);
+      
+    }
+  }
+  
+  else if(isPaused && !mousePressed) {
+    // Important -- save current state in another temporary array
+    // So that you don't overwrite the states when mouse goes down again without letting the previous change reflect on the board
+    // Geddit?
+    for(int x = 0; x < boardWidth; x++) {
+      for(int y = 0; y < boardHeight; y++) {
+        cells_temp[x][y] = cells[x][y];
+      } 
+    }
+  }
+}
+
+void setNextBoardState() {
+  // Save current state in temp
+  for(int x = 0; x < boardWidth; x++) {
+    for(int y = 0; y < boardHeight; y++) {
+      cells_temp[x][y] = cells[x][y];
+    }
+  }
+  
+  
+  for(int x = 1; x < boardWidth - 1; x++) {
+    for(int y = 1; y < boardHeight - 1; y++) {
+      // Calculate neighbours
+      int neighbours = 0;
+      for(int i = -1; i <= 1; i++) {
+        for(int j = -1; j <= 1; j++) {
+            neighbours += cells_temp[x+i][y+j];
+        }
+      }
+      
+      neighbours -= cells_temp[x][y];
+      
+      // Now, apply the rules of the game of life
+      if(cells_temp[x][y] == 1) { // Cell is alive
+        if(neighbours < 2 || neighbours > 3) {
+          cells[x][y] = 0; // kill it
+        }
+      } else {
+        if(neighbours == 3) {
+          cells[x][y] = 1; // Give it life
+        }
+      }      
+    }
+  }   
+}
+
+
+void keyPressed() {
+  // Function to run whenever you press a key 
+  if(key == ' ') {
+    // space pressed, run pause / play functionality
+    isPaused = !isPaused;
+  }
+}
